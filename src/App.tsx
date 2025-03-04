@@ -6,17 +6,20 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './store/useStore.ts';
 //import { Provider as ReduxProvider } from "react-redux";
 //import { useStore } from "./store/index.ts";
+import ErrorBoundary from "./pages/ErrorBoundary.tsx";
 
 export default function App() {
   //const store = useStore();
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <BrowserRouter>
-          <RoutesSetup />
-        </BrowserRouter>
-      </PersistGate>
-    </Provider >
+    <ErrorBoundary>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <BrowserRouter>
+            <RoutesSetup />
+          </BrowserRouter>
+        </PersistGate>
+      </Provider >
+    </ErrorBoundary>
   );
 }
 

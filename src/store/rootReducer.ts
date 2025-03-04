@@ -1,27 +1,10 @@
-import type { Action } from "redux";
-import type { DataStore } from "./dataStore";
+import { combineReducers } from "redux";
+import * as dataStore from "./dataStore/index.ts"
+import * as join from "./join/index.ts"
+import * as buy from "./buy/index.ts"
 
-// 리덕스 액션 구현
-export type SetDataAction = Action<"setData"> & {
-  haruMarket_productCategory_index: Number;
-  harumarket_product_index: Number;
-  harumarket_product_name: String;
-};
-export type Actions = SetDataAction;
-
-const initialAppState = {
-  haruMarket_productCategory_index: 0,
-  harumarket_product_index: 0,
-  harumarket_product_name: ""
-};
-export const rootReducer = (
-  state: DataStore = initialAppState,
-  action: Actions
-) => {
-  switch (action.type) {
-    case "setData": {
-      return { ...state, haruMarket_productCategory_index: action.haruMarket_productCategory_index };
-    }
-  }
-  return state;
-};
+export const rootReducer = combineReducers({
+  dataStore: dataStore.reducer,
+  join: join.reducer,
+  buy: buy.reducer,
+});

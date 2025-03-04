@@ -4,25 +4,53 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useSelector } from 'react-redux';
-import type { AppState } from "../store/AppState";
 import { useDispatch } from 'react-redux';
+import { httpRequest } from '../tool.js';
+import toastr from "toastr";
 
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const authorization = useSelector<AppState, String>((state) => state.dataStore.authorization);
+  const dataStores = useSelector((state) => state.dataStore);
+  const authorization = useSelector((state) => state.dataStore.authorization);
   const [harumarket_product_name, setHarumarket_product_name] = useState('');
 
   const move = useCallback((url) => {
     navigate(`${url}`);
+    //navigate(url, { replace: true, state: { t: Date.now() } });
   }, [navigate]);
 
   useEffect(() => {
     console.log("현재 authorization:", authorization);
   }, [authorization]);
 
-  const move2 = (path) => {
-    navigate(path);
+  const move2 = async (url) => {
+    let data = await httpRequest("POST", "http://localhost:8080/user/move2", null, dataStores.authorization);
+    if (data.status != 200) {
+      console.log("토큰 유효하지 않음");
+      let data2 = await httpRequest("POST", "http://localhost:8080/common/token_refresh", null, dataStores.authorization);
+      if (data2.status == 200) {
+        console.log("토큰 재발급");
+        dispatch({
+            type: "setAuthorization",
+            authorization: data2.data.token
+        });
+        data = await httpRequest("POST", "http://localhost:8080/user/move2", null, dataStores.authorization);
+        navigate(`${url}`);
+      }
+      else {
+        toastr.error("로그아웃 되었습니다.");
+        dispatch({
+            type: "setAuthorization",
+            authorization: ""
+        });
+        navigate(`/`);
+      }
+    }
+    else {
+      console.log("토큰 유효");
+      navigate(`${url}`);
+    }
   };
 
   const handleProductNameChange = (event) => {
@@ -30,14 +58,14 @@ export default function Header() {
   };
 
   const haruMarket_productCategory_name_search = () => {
-    // 검색 로직 구현 (harumarket_product_name 사용)
-    console.log("Search clicked", harumarket_product_name);
+    localStorage.setItem('harumarket_product_name', harumarket_product_name);
+    navigate("/product_search");
   };
 
   const logout = () => {
     dispatch({
-        type: "setAuthorization",
-        authorization: ''
+      type: "setAuthorization",
+      authorization: ''
     });
     navigate("/");
   };
@@ -55,8 +83,8 @@ export default function Header() {
               </li>
               <li className="nav-item">
                 <a className="nav-link text-black" style={{ cursor: 'pointer' }} onClick={() => {
-                move("/join1")
-              }}>JOIN</a>
+                  move("/join1")
+                }}>JOIN</a>
               </li>
             </ul>
           </div>
@@ -138,7 +166,10 @@ export default function Header() {
                 style={{ width: 'auto' }} // width 수정
                 value={harumarket_product_name} // 제어 컴포넌트
                 onChange={handleProductNameChange} // input 변경 이벤트
-                onKeyUp={(event) => { if (event.key === 'Enter') haruMarket_productCategory_name_search(); }} // Enter key event
+                onKeyUp={(event) => { 
+                  if (event.key==="Enter") {
+                  haruMarket_productCategory_name_search();
+                } }} // Enter key event
               />
               <button
                 className="btn btn-outline-secondary"

@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ajax_send } from '../tool.js';
 import { useDispatch } from 'react-redux';
-import type { SetDataAction } from '../store/rootReducer.js';
-
 import { useSelector } from 'react-redux';
-import type { DataStore } from '../store/dataStore';
+import type { AppState } from "../store/AppState";
 import {
   useNavigate,
 } from "react-router-dom";
 
 export default function Nav() {
   const [categorys, setCategorys] = useState<any[]>([]);
-  const haruMarket_productCategory_index = useSelector<DataStore, Number>((state) => state.haruMarket_productCategory_index);
+  const haruMarket_productCategory_index = useSelector<AppState, Number>((state) => state.dataStore.haruMarket_productCategory_index);
   const navigate = useNavigate();
 
   const harumarket_productcategory = useCallback(() => {
@@ -22,26 +20,24 @@ export default function Nav() {
 
   useEffect(() => {
     harumarket_productcategory(); // useEffect 실행 시 호출됨
-  }, [harumarket_productcategory]);
+  }, []);
 
   const dispatch = useDispatch();
 
   const moveNav = useCallback((_haruMarket_productCategory_index) => {
-    console.log(_haruMarket_productCategory_index);
-
-    const action: SetDataAction = {  // 올바른 타입의 액션 객체 생성
-        type: "setData",
-        haruMarket_productCategory_index: _haruMarket_productCategory_index,
-        harumarket_product_index: 0, // 필요한 다른 값들도 함께 전달해야 함
-        harumarket_product_name: "",
-    };
-    dispatch(action);
+    dispatch({
+        type: "setCategory",
+        haruMarket_productCategory_index: _haruMarket_productCategory_index
+        // ,
+        // harumarket_product_index: 0, // 필요한 다른 값들도 함께 전달해야 함
+        // harumarket_product_name: "",
+    });
 
     navigate("/product_list");
   }, []);
 
   useEffect(() => {
-      console.log("현재 haruMarket_productCategory_index:", haruMarket_productCategory_index);
+      //console.log("현재 haruMarket_productCategory_index:", haruMarket_productCategory_index);
   }, [haruMarket_productCategory_index]);
 
   return (
